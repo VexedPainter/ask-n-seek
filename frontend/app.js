@@ -12,7 +12,7 @@ const observer = new IntersectionObserver((entries) => {
 
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-// Cosmos Energy Particles
+// Realistic Cosmos/Galaxy Particles
 const canvas = document.getElementById('particle-canvas');
 const ctx = canvas.getContext('2d');
 let particles = [];
@@ -27,60 +27,55 @@ resize();
 
 class Particle {
     constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
-        this.size = Math.random() * 2 + 1;
-        this.speedX = (Math.random() * 1 - 0.5);
-        this.speedY = (Math.random() * 1 - 0.5);
-        this.color = Math.random() > 0.5 ? '#b8860b' : '#9370db'; // Gold & Purple
+        this.angle = Math.random() * Math.PI * 2;
+        // Concentrate particles in the center using power
+        const maxRadius = Math.max(canvas.width, canvas.height);
+        this.radius = Math.pow(Math.random(), 2.5) * maxRadius;
+        this.size = Math.random() * 1.5 + 0.2;
+        
+        // Inner particles rotate faster
+        this.speed = (Math.random() * 0.002 + 0.0005) * (200 / Math.max(this.radius, 50)); 
+        
+        // Colors: mostly white/silver with cyan/blue nebulas
+        const colors = ['#ffffff', '#f8f8ff', '#00e5ff', '#87cefa', '#4682b4'];
+        this.color = colors[Math.floor(Math.random() * colors.length)];
+        this.opacity = Math.random() * 0.8 + 0.1;
     }
     update() {
-        this.x += this.speedX;
-        this.y += this.speedY;
-        if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
-        if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+        this.angle -= this.speed;
+        this.x = canvas.width / 2 + Math.cos(this.angle) * this.radius;
+        // Multiply Y by 0.6 to give the galaxy an elliptical/tilted 3D perspective
+        this.y = canvas.height / 2 + Math.sin(this.angle) * (this.radius * 0.6);
     }
     draw() {
         ctx.fillStyle = this.color;
+        ctx.globalAlpha = this.opacity;
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         ctx.fill();
+        ctx.globalAlpha = 1.0;
         
-        // Add glow
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = this.color;
+        if (this.size > 1.2) {
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = this.color;
+        } else {
+            ctx.shadowBlur = 0;
+        }
     }
 }
 
-// Keep count around 80 for dense cosmos effect
-for (let i = 0; i < 80; i++) {
+// 800 particles for a dense, realistic starfield
+for (let i = 0; i < 800; i++) {
     particles.push(new Particle());
 }
 
 let animationFrameId = null;
 
 function animateParticles() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Slight trailing effect for movement
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // Draw lines between close particles
-    for (let i = 0; i < particles.length; i++) {
-        for (let j = i; j < particles.length; j++) {
-            const dx = particles[i].x - particles[j].x;
-            const dy = particles[i].y - particles[j].y;
-            const dist = Math.sqrt(dx*dx + dy*dy);
-            
-            if (dist < 150) {
-                ctx.beginPath();
-                ctx.strokeStyle = `rgba(147, 112, 219, ${1 - dist/150})`;
-                ctx.lineWidth = 0.5;
-                ctx.moveTo(particles[i].x, particles[i].y);
-                ctx.lineTo(particles[j].x, particles[j].y);
-                ctx.stroke();
-            }
-        }
-    }
-    
-    // Draw particles
     particles.forEach(p => {
         p.update();
         p.draw();

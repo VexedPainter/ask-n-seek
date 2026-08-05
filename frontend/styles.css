@@ -1,11 +1,11 @@
 :root {
-    --bg-color: #050211; /* Deep space dark purple/black */
+    --bg-color: #000000; /* Pure black space */
     --text-color: #f8f8ff; /* Ghost white */
-    --accent-color: #9370db; /* Cosmos purple */
-    --accent-glow: #b8860b; /* Golden glow */
-    --border-color: rgba(147, 112, 219, 0.2);
-    --hover-bg: rgba(147, 112, 219, 0.1);
-    --glass-bg: rgba(5, 2, 17, 0.6);
+    --accent-color: #00e5ff; /* Cyan/Nebula glow */
+    --accent-glow: #ffffff; /* White starlight */
+    --border-color: rgba(255, 255, 255, 0.1);
+    --hover-bg: rgba(255, 255, 255, 0.05);
+    --glass-bg: rgba(0, 0, 0, 0.6);
     
     --font-heading: 'Playfair Display', serif;
     --font-body: 'Inter', sans-serif;
@@ -19,7 +19,7 @@
 }
 
 body {
-    background: radial-gradient(circle at 50% 0%, #1a0b2e 0%, var(--bg-color) 70%);
+    background: var(--bg-color);
     background-attachment: fixed;
     color: var(--text-color);
     font-family: var(--font-body);
@@ -65,7 +65,7 @@ body {
     border: 1px solid var(--border-color);
     border-radius: 30px;
     backdrop-filter: blur(10px);
-    box-shadow: 0 4px 30px rgba(147, 112, 219, 0.2);
+    box-shadow: 0 4px 30px rgba(0, 229, 255, 0.1);
 }
 
 .logo-icon {
@@ -144,12 +144,12 @@ body {
     background: var(--glass-bg);
     backdrop-filter: blur(10px);
     transition: all 0.3s ease;
-    box-shadow: 0 0 20px rgba(147, 112, 219, 0.05);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
 }
 
 .drop-zone:hover {
     border: 1px solid var(--accent-glow);
-    box-shadow: 0 0 30px rgba(184, 134, 11, 0.2);
+    box-shadow: 0 0 30px rgba(0, 229, 255, 0.2);
     transform: translateY(-2px);
 }
 
@@ -280,7 +280,7 @@ body {
 #search-input:focus {
     outline: none;
     border-color: var(--accent-glow);
-    box-shadow: 0 0 15px rgba(184, 134, 11, 0.3);
+    box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
 }
 
 #search-btn {
