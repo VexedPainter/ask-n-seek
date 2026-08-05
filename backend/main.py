@@ -93,6 +93,14 @@ def get_video(filename: str):
         raise HTTPException(status_code=404, detail="Video not found")
     return FileResponse(file_path)
 
+from fastapi.staticfiles import StaticFiles
+
 @app.get("/health")
 def health_check():
     return {"status": "ok"}
+
+@app.get("/")
+def serve_index():
+    return FileResponse("frontend/index.html")
+
+app.mount("/", StaticFiles(directory="frontend"), name="frontend")

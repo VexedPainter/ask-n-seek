@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:8000';
+const BASE_URL = '';
 let currentVideoId = null;
 
 // Intersection Observer for scroll reveal
