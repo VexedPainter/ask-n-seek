@@ -335,16 +335,20 @@ function renderResults(data) {
             player.scrollIntoView({ behavior: 'smooth', block: 'center' });
             
             player.currentTime = start;
-            const playPromise = player.play();
             
-            if (playPromise !== undefined) {
-                playPromise.catch(error => {
-                    console.warn("Playback interrupted or blocked. Trying muted...", error);
-                    // Browsers sometimes block unmuted playback even on click. 
-                    player.muted = true;
-                    player.play().catch(e => console.error("Playback fully blocked:", e));
-                });
-            }
+            // Wait 1 second for the scroll to finish before playing
+            setTimeout(() => {
+                const playPromise = player.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.warn("Playback interrupted or blocked. Trying muted...", error);
+                        // Browsers sometimes block unmuted playback even on click. 
+                        player.muted = true;
+                        player.play().catch(e => console.error("Playback fully blocked:", e));
+                    });
+                }
+            }, 1000);
             
             if (window.activePauseTimeout) {
                 clearTimeout(window.activePauseTimeout);
