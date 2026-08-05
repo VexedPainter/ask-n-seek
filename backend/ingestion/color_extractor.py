@@ -19,26 +19,44 @@ def closest_color(rgb_val):
     hsv = cv2.cvtColor(c, cv2.COLOR_RGB2HSV)[0][0]
     h, s, v = hsv
     
-    # In OpenCV, H is 0-179, S is 0-255, V is 0-255
-    if v < 45:
-        return 'black'
-    if s < 45 and v > 200:
-        return 'white'
+    # Grayscale check
     if s < 60:
-        return 'gray'
+        if v < 45:
+            return 'black'
+        elif v > 150:
+            # Distinguish white from silver/gray based on extremely low saturation and high value
+            if s < 30 and v > 180:
+                return 'white'
+            elif v > 200:
+                return 'silver'
+            else:
+                return 'gray'
+        else:
+            return 'gray'
+            
+    # Brown is essentially dark orange
+    if 10 <= h < 25 and v < 120:
+        return 'brown'
         
     # Hue ranges
-    if h < 12 or h > 165:
+    if h < 8 or h > 170:
+        # Check if it's pink (high value, somewhat lower saturation in red hue)
+        if s < 150 and v > 150 and (h < 8 or h > 170):
+            return 'pink'
         return 'red'
-    elif 12 <= h < 25:
+    elif 8 <= h < 25:
         return 'orange'
     elif 25 <= h < 35:
         return 'yellow'
     elif 35 <= h < 85:
         return 'green'
-    elif 85 <= h < 130:
+    elif 85 <= h < 100:
+        return 'cyan'
+    elif 100 <= h < 130:
         return 'blue'
-    elif 130 <= h <= 165:
+    elif 130 <= h <= 170:
+        if v > 150 and s < 150:
+            return 'pink'
         return 'purple'
     
     return 'gray'

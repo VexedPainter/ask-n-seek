@@ -3,7 +3,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-COLORS = {"red", "blue", "green", "black", "white", "yellow", "gray", "orange"}
+COLORS = {"red", "blue", "green", "black", "white", "yellow", "gray", "orange", "silver", "brown", "pink", "purple", "cyan"}
 
 SYNONYMS = {
     'woman': 'person', 'women': 'person',
