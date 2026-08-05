@@ -15,14 +15,33 @@ COLORS = {
 }
 
 def closest_color(rgb_val):
-    min_dist = float('inf')
-    best_color = None
-    for name, color in COLORS.items():
-        dist = sum((a - b) ** 2 for a, b in zip(rgb_val, color))
-        if dist < min_dist:
-            min_dist = dist
-            best_color = name
-    return best_color
+    c = np.uint8([[[rgb_val[0], rgb_val[1], rgb_val[2]]]])
+    hsv = cv2.cvtColor(c, cv2.COLOR_RGB2HSV)[0][0]
+    h, s, v = hsv
+    
+    # In OpenCV, H is 0-179, S is 0-255, V is 0-255
+    if v < 45:
+        return 'black'
+    if s < 45 and v > 200:
+        return 'white'
+    if s < 60:
+        return 'gray'
+        
+    # Hue ranges
+    if h < 12 or h > 165:
+        return 'red'
+    elif 12 <= h < 25:
+        return 'orange'
+    elif 25 <= h < 35:
+        return 'yellow'
+    elif 35 <= h < 85:
+        return 'green'
+    elif 85 <= h < 130:
+        return 'blue'
+    elif 130 <= h <= 165:
+        return 'purple'
+    
+    return 'gray'
 
 def extract_dominant_color(frame, bbox):
     """
