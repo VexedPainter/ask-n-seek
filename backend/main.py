@@ -13,6 +13,7 @@ from backend.query.parser import parse_query
 from backend.search.search import search
 from backend.search.no_match import diagnose_no_match
 from backend.search.summary import get_top_objects
+from backend.search.events import find_transition_events
 from backend.ingestion.pipeline import run_pipeline
 
 app = FastAPI(title="Ask-N-Seek API")
@@ -78,7 +79,29 @@ def run_query(req: QueryRequest):
                 "message": f"Sorry, I don't know what '{filter_dict['unsupported_terms'][0]}' looks like. I only recognize basic objects like person, car, dog, etc."
             }
         }
+    
+    # --- Event query path (disappear / reappear) ---
+    if filter_dict.get('event'):
+        event_type = filter_dict['event']
+        class_name = filter_dict.get('class_name') or 'person'  # default to person
         
+        events = find_transition_events(req.video_id, class_name, event_type)
+        
+        no_match_diagnosis = None
+        if not events:
+            no_match_diagnosis = {
+                "type": "no_event",
+                "message": f"No {event_type} events found for '{class_name}' in this video. "
+                           f"Either '{class_name}' was visible the entire time, or it was never detected at all."
+            }
+        
+        return {
+            "results": events,
+            "event_type": event_type,
+            "no_match_diagnosis": no_match_diagnosis
+        }
+    
+    # --- Standard filter-based search path ---
     results = search(filter_dict, req.video_id)
     
     no_match_diagnosis = None
