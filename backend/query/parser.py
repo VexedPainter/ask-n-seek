@@ -10,7 +10,10 @@ SYNONYMS = {
     'man': 'person', 'men': 'person',
     'lady': 'person', 'ladies': 'person',
     'gentleman': 'person', 'gentlemen': 'person',
-    'people': 'person'
+    'people': 'person',
+    'vehicle': 'car', 'vehicles': 'car',
+    'auto': 'car', 'automobile': 'car',
+    'bike': 'bicycle', 'bikes': 'bicycle'
 }
 
 NUMBERS = {

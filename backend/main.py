@@ -68,6 +68,17 @@ def get_ingest_status(job_id: str):
 @app.post("/query")
 def run_query(req: QueryRequest):
     filter_dict = parse_query(req.text)
+    
+    # Catch completely unsupported queries so they don't return the entire database
+    if filter_dict.get('unsupported_terms') and not filter_dict.get('class_name') and not filter_dict.get('color'):
+        return {
+            "results": [],
+            "no_match_diagnosis": {
+                "type": "unsupported_vocabulary",
+                "message": f"Sorry, I don't know what '{filter_dict['unsupported_terms'][0]}' looks like. I only recognize basic objects like person, car, dog, etc."
+            }
+        }
+        
     results = search(filter_dict, req.video_id)
     
     no_match_diagnosis = None
