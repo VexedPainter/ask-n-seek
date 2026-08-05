@@ -146,7 +146,7 @@ def parse_query(text: str) -> dict:
     # 3. Spatial relations
     colors_str = '|'.join(COLORS)
     
-    spatial_match = re.search(rf'\b(?:to the\s+)?(left|right)\s+of\s+(?:the\s+|a\s+|an\s+)?(?:({colors_str})\s+)?([a-z]+)\b', text)
+    spatial_match = re.search(rf'\b(?:to the\s+)?(left|right)\s+of\s+(?:the\s+|a\s+|an\s+)?(?:({colors_str})\s+)?(?:colou?r(?:ed)?\s+)?([a-z]+)\b', text)
     if spatial_match:
         direction = spatial_match.group(1)
         target_color = spatial_match.group(2)
@@ -159,7 +159,7 @@ def parse_query(text: str) -> dict:
             
         text = text[:spatial_match.start()] + text[spatial_match.end():]
         
-    touch_match = re.search(rf'\b(touching|grabbing|pulling|holding|barging at|opening)\s+(?:the\s+|a\s+|an\s+)?(?:({colors_str})\s+)?([a-z]+)\b', text)
+    touch_match = re.search(rf'\b(touching|grabbing|pulling|holding|barging at|opening)\s+(?:the\s+|a\s+|an\s+)?(?:({colors_str})\s+)?(?:colou?r(?:ed)?\s+)?([a-z]+)\b', text)
     if touch_match:
         target_color = touch_match.group(2)
         target = touch_match.group(3)
