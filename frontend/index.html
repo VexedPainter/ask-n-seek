@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ask-N-Seek</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <canvas id="particle-canvas"></canvas>
+
+    <main class="container">
+        <!-- Hero Section -->
+        <section id="hero" class="reveal">
+            <h1 class="headline">Type what happened. <br>We'll show you exactly where — and prove it.</h1>
+            <p class="subheadline">Upload your footage and search using natural language.</p>
+        </section>
+
+        <!-- Upload Zone -->
+        <section id="upload-section" class="reveal">
+            <div id="drop-zone" class="drop-zone">
+                <div class="drop-zone-content">
+                    <span class="upload-icon">⇪</span>
+                    <p>Drag and drop a video file, or <span class="browse-btn">browse</span></p>
+                    <input type="file" id="file-input" accept="video/mp4,video/x-m4v,video/*">
+                </div>
+            </div>
+            
+            <div id="ingest-status" class="hidden">
+                <div class="progress-container">
+                    <div id="progress-bar" class="progress-bar"></div>
+                </div>
+                <p id="progress-text" class="progress-text">Initializing...</p>
+            </div>
+        </section>
+
+        <!-- Top Objects Summary -->
+        <section id="top-objects-section" class="reveal hidden">
+            <h2 class="section-title">Discovered Objects</h2>
+            <div id="objects-grid" class="objects-grid">
+                <!-- Populated by JS -->
+            </div>
+        </section>
+
+        <!-- Search -->
+        <section id="search-section" class="reveal hidden">
+            <h2 class="section-title">Query the Footage</h2>
+            <div class="preset-queries">
+                <button class="preset-btn" data-query="show me all vehicles">Any vehicles?</button>
+                <button class="preset-btn" data-query="person without a helmet">Safety violations?</button>
+                <button class="preset-btn" data-query="red car left of the truck">Specific relations?</button>
+            </div>
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="e.g., 'red frisbee' or 'person wearing no hat'">
+                <button id="search-btn">Search</button>
+            </div>
+        </section>
+
+        <!-- Results -->
+        <section id="results-section" class="reveal hidden">
+            <div class="video-container">
+                <video id="video-player" controls preload="metadata"></video>
+            </div>
+            <div id="results-message" class="results-message"></div>
+            <div id="jump-list" class="jump-list">
+                <!-- Result cards populated by JS -->
+            </div>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>

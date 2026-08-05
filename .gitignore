@@ -1,0 +1,10 @@
+Lib/
+Include/
+Scripts/
+__pycache__/
+*.pyc
+data/
+*.mp4
+ask_n_seek.db
+yolov8n_openvino_model/
+yolov8n.pt
