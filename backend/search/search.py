@@ -7,7 +7,7 @@ from backend.db.schema import get_connection
 
 def build_search_query(filter_dict, video_id):
     query_parts = [
-        "SELECT ROUND(timestamp_s) as window, COUNT(*) as det_count, MAX(confidence) as max_conf",
+        "SELECT ROUND(timestamp_s) as window, COUNT(*) as det_count, MAX(confidence) as max_conf, GROUP_CONCAT(x1 || ',' || y1 || ',' || x2 || ',' || y2, ';') as bboxes",
         "FROM detections",
         "WHERE video_id = ?"
     ]
@@ -84,9 +84,18 @@ def search(filter_dict, video_id):
             
         explanation = f"Matched: {', '.join(parts)}, max confidence {max_conf:.2f}"
         
+        bboxes_raw = row['bboxes']
+        bboxes_list = []
+        if bboxes_raw:
+            for b in bboxes_raw.split(';'):
+                parts_coords = b.split(',')
+                if len(parts_coords) == 4:
+                    bboxes_list.append([int(p) for p in parts_coords])
+        
         results.append({
             'window': window,
-            'explanation': explanation
+            'explanation': explanation,
+            'bboxes': bboxes_list
         })
         
     conn.close()

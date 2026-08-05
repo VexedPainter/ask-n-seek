@@ -12,7 +12,7 @@ def detect(frame):
     """
     Returns list of dicts: {class_name, confidence, bbox: [x1, y1, x2, y2]}
     """
-    results = model(frame, verbose=False)
+    results = model(frame, verbose=False, conf=0.50)
     detections = []
     
     if not results:

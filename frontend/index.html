@@ -62,8 +62,9 @@
 
         <!-- Results -->
         <section id="results-section" class="reveal hidden">
-            <div class="video-container">
+            <div class="video-container" style="position: relative;">
                 <video id="video-player" controls preload="metadata"></video>
+                <div id="bbox-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10;"></div>
             </div>
             <div id="results-message" class="results-message"></div>
             <div id="jump-list" class="jump-list">
