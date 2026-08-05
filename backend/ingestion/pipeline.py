@@ -37,19 +37,30 @@ def run_pipeline(video_path):
         compute_spatial_relations(detections)
         
         # Format for DB
-        for det in detections:
+        if not detections:
             all_db_rows.append({
                 'video_id': video_id,
                 'timestamp_s': timestamp_s,
-                'class_name': det['class_name'],
-                'confidence': float(det['confidence']),
-                'color': det['color'],
-                'x1': det['bbox'][0],
-                'y1': det['bbox'][1],
-                'x2': det['bbox'][2],
-                'y2': det['bbox'][3],
-                'spatial_relation': det['spatial_relation']
+                'class_name': '__empty__',
+                'confidence': 0.0,
+                'color': None,
+                'x1': 0, 'y1': 0, 'x2': 0, 'y2': 0,
+                'spatial_relation': None
             })
+        else:
+            for det in detections:
+                all_db_rows.append({
+                    'video_id': video_id,
+                    'timestamp_s': timestamp_s,
+                    'class_name': det['class_name'],
+                    'confidence': float(det['confidence']),
+                    'color': det['color'],
+                    'x1': det['bbox'][0],
+                    'y1': det['bbox'][1],
+                    'x2': det['bbox'][2],
+                    'y2': det['bbox'][3],
+                    'spatial_relation': det['spatial_relation']
+                })
             
         if (idx + 1) % 5 == 0:
             print(f"   Processed {idx + 1}/{len(frames)} frames...")
