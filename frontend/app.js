@@ -336,8 +336,20 @@ function renderResults(data) {
         `;
         
         card.addEventListener('click', () => {
+            // Smooth scroll up to the video player
+            player.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
             player.currentTime = start;
-            player.play();
+            const playPromise = player.play();
+            
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.warn("Playback interrupted or blocked. Trying muted...", error);
+                    // Browsers sometimes block unmuted playback even on click. 
+                    player.muted = true;
+                    player.play().catch(e => console.error("Playback fully blocked:", e));
+                });
+            }
             
             if (window.activePauseTimeout) {
                 clearTimeout(window.activePauseTimeout);
