@@ -304,20 +304,8 @@ function renderResults(data) {
         
         card.addEventListener('click', () => {
             const t = r.window;
-            player.currentTime = Math.max(0, t - 3);
+            player.currentTime = t;
             player.play();
-            
-            if (pauseTimeout) clearTimeout(pauseTimeout);
-            
-            // Poll to pause at t + 3
-            const checkPause = () => {
-                if (player.currentTime >= t + 3) {
-                    player.pause();
-                } else if (!player.paused) {
-                    pauseTimeout = setTimeout(checkPause, 100);
-                }
-            };
-            pauseTimeout = setTimeout(checkPause, 100);
         });
         
         listEl.appendChild(card);
