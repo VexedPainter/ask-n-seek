@@ -86,9 +86,21 @@ def extract_dominant_color(frame, bbox):
         kmeans.fit(pixels)
         labels = kmeans.labels_
         counts = np.bincount(labels)
-        dominant_cluster_idx = np.argmax(counts)
-        dominant_rgb = kmeans.cluster_centers_[dominant_cluster_idx]
-        return closest_color(dominant_rgb)
+        
+        # Sort clusters by pixel count
+        idx_sorted = np.argsort(counts)[::-1]
+        
+        best_color = 'gray'
+        for idx in idx_sorted:
+            rgb = kmeans.cluster_centers_[idx]
+            color_name = closest_color(rgb)
+            # If the largest cluster is a real color (not black/white/gray), return it immediately!
+            if color_name not in ['black', 'white', 'gray']:
+                return color_name
+            # Otherwise, keep the first (largest) fallback color, but check the second cluster just in case!
+            if idx == idx_sorted[0]:
+                best_color = color_name
+                
+        return best_color
     except Exception:
-        # Fallback if clustering fails
         return None
