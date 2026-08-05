@@ -91,6 +91,13 @@ def parse_query(text: str) -> dict:
         result["spatial"] = f"{direction}_of:{target}"
         # Remove spatial part from text
         text = text[:spatial_match.start()] + text[spatial_match.end():]
+        
+    touch_match = re.search(r'\b(touching|grabbing|pulling|holding|barging at|opening)\s+(?:the\s+|a\s+|an\s+)?([a-z]+)\b', text)
+    if touch_match:
+        target = touch_match.group(2)
+        target = SYNONYMS.get(target, target)
+        result["spatial"] = f"touching:{target}"
+        text = text[:touch_match.start()] + text[touch_match.end():]
 
     # 4. Count operators
     count_pattern = r'\b(more than|greater than|less than|fewer than|exactly)\s+(one|two|three|four|five|six|seven|eight|nine|ten|\d+)\b'
