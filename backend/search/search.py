@@ -14,16 +14,34 @@ def build_search_query(filter_dict, video_id):
     params = [video_id]
     
     if filter_dict.get('class_name'):
-        query_parts.append("AND class_name = ?")
-        params.append(filter_dict['class_name'])
+        cls = filter_dict['class_name']
+        VEHICLE_CLASSES = {'car', 'truck', 'bus'}
+        if cls in VEHICLE_CLASSES:
+            placeholders = ', '.join(['?' for _ in VEHICLE_CLASSES])
+            query_parts.append(f"AND class_name IN ({placeholders})")
+            params.extend(list(VEHICLE_CLASSES))
+        else:
+            query_parts.append("AND class_name = ?")
+            params.append(cls)
         
     if filter_dict.get('color'):
         query_parts.append("AND color = ?")
         params.append(filter_dict['color'])
         
     if filter_dict.get('spatial'):
-        query_parts.append("AND spatial_relation = ?")
-        params.append(filter_dict['spatial'])
+        spatial = filter_dict['spatial']
+        # YOLO frequently misclassifies vehicles (car/truck/bus).
+        # When querying for one, also match the others.
+        VEHICLE_CLASSES = {'car', 'truck', 'bus'}
+        parts = spatial.split(':')
+        if len(parts) == 2 and parts[1] in VEHICLE_CLASSES:
+            relation_type = parts[0]  # e.g. "touching", "left_of", "right_of"
+            placeholders = ', '.join(['?' for _ in VEHICLE_CLASSES])
+            query_parts.append(f"AND spatial_relation IN ({placeholders})")
+            params.extend([f"{relation_type}:{cls}" for cls in VEHICLE_CLASSES])
+        else:
+            query_parts.append("AND spatial_relation = ?")
+            params.append(spatial)
         
     if filter_dict.get('spatial_target_color'):
         query_parts.append("AND spatial_target_color = ?")
