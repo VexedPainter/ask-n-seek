@@ -69,7 +69,10 @@ def parse_query(text: str) -> dict:
         
     # 2. Exclusions
     # Normalize varied phrasings to "without"
-    text = re.sub(r'\b(with no|having no|wearing no)\b', 'without', text)
+    text = re.sub(r'\b(with no|having no|wearing no|zero|0)\b', 'without', text)
+    # Also handle standalone "no <noun>" at the start or anywhere, but be careful not to replace "no" inside words.
+    text = re.sub(r'\bno\b', 'without', text)
+    
     # Match "without [a/an/the] <noun>"
     exclude_matches = re.finditer(r'\bwithout\s+(?:a\s+|an\s+|the\s+)?([a-z]+)\b', text)
     for m in exclude_matches:
