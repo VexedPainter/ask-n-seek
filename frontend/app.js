@@ -1,6 +1,47 @@
 const BASE_URL = '';
 let currentVideoId = null;
 
+// Navigation logic
+const views = {
+    'dashboard': ['chat-section'],
+    'upload': ['hero', 'upload-section'],
+    'results': ['top-objects-section', 'search-section', 'results-section']
+};
+
+function switchView(targetView) {
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        if (btn.dataset.target === targetView) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+
+    Object.keys(views).forEach(viewName => {
+        const isTarget = viewName === targetView;
+        views[viewName].forEach(sectionId => {
+            const el = document.getElementById(sectionId);
+            if (el) {
+                if (isTarget) {
+                    el.classList.remove('hidden');
+                    // Retrigger observer for animations if needed
+                    setTimeout(() => observer.observe(el), 10);
+                } else {
+                    el.classList.add('hidden');
+                }
+            }
+        });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => switchView(btn.dataset.target));
+    });
+    // Initialize default view
+    switchView('dashboard');
+});
+
 // Intersection Observer for scroll reveal
 const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
@@ -191,21 +232,8 @@ function pollStatus(jobId) {
 }
 
 async function onIngestComplete() {
-    // Show Top Objects, Search, and Chat sections
-    const topSec = document.getElementById('top-objects-section');
-    const searchSec = document.getElementById('search-section');
-    const chatSec = document.getElementById('chat-section');
-    
-    topSec.classList.remove('hidden');
-    searchSec.classList.remove('hidden');
-    chatSec.classList.remove('hidden');
-    
-    // Slight delay to allow CSS reveal to trigger if they intersect
-    setTimeout(() => {
-        observer.observe(topSec);
-        observer.observe(searchSec);
-        observer.observe(chatSec);
-    }, 100);
+    // Automatically switch to Results view
+    switchView('results');
     
     // Fetch Top Objects
     try {
@@ -506,9 +534,8 @@ async function sendChatMessage(text) {
                 
                 chip.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    // Ensure results section is visible with video
-                    const resultsSec = document.getElementById('results-section');
-                    resultsSec.classList.remove('hidden');
+                    // Switch view to Results where the video player is
+                    switchView('results');
                     const player = document.getElementById('video-player');
                     if (!player.src || !player.src.includes(currentVideoId)) {
                         player.src = `${BASE_URL}/video/${currentVideoId}`;

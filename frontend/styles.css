@@ -91,6 +91,45 @@ body {
     font-style: italic;
 }
 
+/* Navigation Bar */
+.main-nav {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 0.5rem;
+    background: var(--glass-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 30px;
+    backdrop-filter: blur(10px);
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.nav-btn {
+    background: transparent;
+    border: none;
+    color: rgba(245, 243, 239, 0.6);
+    padding: 0.5rem 1.5rem;
+    border-radius: 20px;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.nav-btn:hover {
+    color: var(--text-color);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.nav-btn.active {
+    color: var(--bg-color);
+    background: var(--text-color);
+    font-weight: 500;
+}
+
 /* Typography */
 .headline {
     font-family: var(--font-heading);
