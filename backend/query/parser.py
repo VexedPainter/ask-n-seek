@@ -52,6 +52,7 @@ def parse_query(text: str) -> dict:
             - spatial (str or None): Spatial relationships (e.g., "left_of:car").
             - count_op (str or None): Operator for counting (">", "<", "==").
             - count_val (int or None): The numerical value for the count.
+            - event (str or None): "disappear" or "reappear" for event queries.
     """
     result = {
         "class_name": None,
@@ -60,11 +61,70 @@ def parse_query(text: str) -> dict:
         "spatial": None,
         "count_op": None,
         "count_val": None,
+        "event": None,
         "unsupported_terms": []
     }
     
     # 0. Normalization
     text = text.lower().strip()
+    
+    # 0.5 Event detection — MUST run before the negation regex so phrases
+    #     like "disappeared" or "no longer visible" aren't mangled.
+    DISAPPEAR_PHRASES = [
+        r'no longer visible', r'no longer see',
+        r'went behind', r'hidden behind',
+        r'disappear(?:ed)?', r'vanish(?:ed)?', r'gone',
+    ]
+    REAPPEAR_PHRASES = [
+        r'show up again', r'appear again', r'visible again',
+        r'reappear(?:ed)?', r'came back', r'come back',
+    ]
+    
+    disappear_pat = r'\b(?:' + '|'.join(DISAPPEAR_PHRASES) + r')\b'
+    reappear_pat  = r'\b(?:' + '|'.join(REAPPEAR_PHRASES) + r')\b'
+    
+    event_match = re.search(reappear_pat, text) or re.search(disappear_pat, text)
+    if event_match:
+        matched_text = event_match.group(0)
+        # Determine which type
+        if re.search(reappear_pat, matched_text):
+            result["event"] = "reappear"
+        else:
+            result["event"] = "disappear"
+        
+        # Strip the event phrase from text so the class extractor sees clean nouns
+        text = text[:event_match.start()] + text[event_match.end():]
+        
+        # Extract class_name from remaining text (reuse synonym + COCO validation)
+        words = re.findall(r'\b[a-z]+\b', text)
+        stopwords = {"a", "an", "the", "some", "any", "is", "are", "of", "and",
+                      "when", "where", "did", "does", "do", "i", "my", "me",
+                      "what", "how", "behind", "from", "in", "to", "it"} | COLORS
+        remaining = [w for w in words if w not in stopwords]
+        
+        def normalize_term(term):
+            term = SYNONYMS.get(term, term)
+            if term not in COCO_CLASSES and term.endswith('s') and term[:-1] in COCO_CLASSES:
+                return term[:-1]
+            if term not in COCO_CLASSES and term.endswith('es') and term[:-2] in COCO_CLASSES:
+                return term[:-2]
+            return term
+        
+        if remaining:
+            for candidate in remaining:
+                norm = normalize_term(candidate)
+                if norm in COCO_CLASSES:
+                    result["class_name"] = norm
+                    break
+            # If no valid COCO class found, record unsupported but don't block
+            if result["class_name"] is None:
+                for candidate in remaining:
+                    norm = normalize_term(candidate)
+                    if norm not in COCO_CLASSES:
+                        result["unsupported_terms"].append(candidate)
+        
+        # Event queries are a different query type — skip filter parsing
+        return result
     
     # 1. Compound splitting (e.g. "redcar" -> "red car")
     for c in COLORS:
