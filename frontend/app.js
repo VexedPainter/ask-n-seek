@@ -292,9 +292,17 @@ function renderResults(data) {
         const confMatch = r.explanation.match(/confidence ([\d.]+)/);
         const conf = confMatch ? parseFloat(confMatch[1]) : 0;
         
+        const start = r.start !== undefined ? r.start : r.window;
+        const end = r.end !== undefined ? r.end : r.window;
+        
+        let timeText = formatTime(start);
+        if (start !== end) {
+            timeText += ` - ${formatTime(end)}`;
+        }
+        
         card.innerHTML = `
             <div class="result-header">
-                <span class="timestamp">${formatTime(r.window)}</span>
+                <span class="timestamp">${timeText}</span>
                 <div class="confidence-track">
                     <div class="confidence-fill" style="width: ${conf * 100}%"></div>
                 </div>
@@ -303,9 +311,21 @@ function renderResults(data) {
         `;
         
         card.addEventListener('click', () => {
-            const t = r.window;
-            player.currentTime = t;
+            player.currentTime = start;
             player.play();
+            
+            if (window.activePauseTimeout) {
+                clearTimeout(window.activePauseTimeout);
+            }
+            
+            const checkPause = () => {
+                if (player.currentTime >= end + 1) {
+                    player.pause();
+                } else if (!player.paused) {
+                    window.activePauseTimeout = setTimeout(checkPause, 100);
+                }
+            };
+            window.activePauseTimeout = setTimeout(checkPause, 100);
         });
         
         listEl.appendChild(card);

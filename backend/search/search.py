@@ -99,4 +99,25 @@ def search(filter_dict, video_id):
         })
         
     conn.close()
-    return results
+    
+    if not results:
+        return []
+        
+    grouped = []
+    current = results[0].copy()
+    current['start'] = current['window']
+    current['end'] = current['window']
+    
+    for r in results[1:]:
+        if r['window'] == current['end'] + 1 and r['explanation'] == current['explanation']:
+            current['end'] = r['window']
+            if r['bboxes']:
+                current['bboxes'].extend(r['bboxes'])
+        else:
+            grouped.append(current)
+            current = r.copy()
+            current['start'] = current['window']
+            current['end'] = current['window']
+            
+    grouped.append(current)
+    return grouped
