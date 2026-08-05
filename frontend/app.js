@@ -304,14 +304,20 @@ function renderResults(data) {
         
         card.addEventListener('click', () => {
             const t = r.window;
-            player.currentTime = t;
-            player.pause();
+            player.currentTime = Math.max(0, t - 3);
+            player.play();
             
-            const onSeek = () => {
-                drawBoundingBoxes(r.bboxes, player);
-                player.removeEventListener('seeked', onSeek);
+            if (pauseTimeout) clearTimeout(pauseTimeout);
+            
+            // Poll to pause at t + 3
+            const checkPause = () => {
+                if (player.currentTime >= t + 3) {
+                    player.pause();
+                } else if (!player.paused) {
+                    pauseTimeout = setTimeout(checkPause, 100);
+                }
             };
-            player.addEventListener('seeked', onSeek);
+            pauseTimeout = setTimeout(checkPause, 100);
         });
         
         listEl.appendChild(card);
@@ -322,56 +328,4 @@ function formatTime(s) {
     const m = Math.floor(s / 60);
     const sec = Math.floor(s % 60);
     return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
-}
-
-// Clear bounding boxes when video is played
-document.getElementById('video-player').addEventListener('play', () => {
-    const overlay = document.getElementById('bbox-overlay');
-    if (overlay) overlay.innerHTML = '';
-});
-
-function drawBoundingBoxes(bboxes, player) {
-    const overlay = document.getElementById('bbox-overlay');
-    if (!overlay) return;
-    overlay.innerHTML = '';
-    
-    if (!bboxes || bboxes.length === 0) return;
-    
-    const dispW = player.clientWidth;
-    const dispH = player.clientHeight;
-    
-    const vidW = player.videoWidth;
-    const vidH = player.videoHeight;
-    
-    if (!vidW || !vidH) return;
-    
-    // Video maintains aspect ratio inside the container
-    const scale = Math.min(dispW / vidW, dispH / vidH);
-    const contentW = vidW * scale;
-    const contentH = vidH * scale;
-    
-    const offsetX = (dispW - contentW) / 2;
-    const offsetY = (dispH - contentH) / 2;
-    
-    bboxes.forEach(bbox => {
-        const [x1, y1, x2, y2] = bbox;
-        const div = document.createElement('div');
-        
-        const left = offsetX + (x1 * scale);
-        const top = offsetY + (y1 * scale);
-        const width = (x2 - x1) * scale;
-        const height = (y2 - y1) * scale;
-        
-        div.style.position = 'absolute';
-        div.style.left = `${left}px`;
-        div.style.top = `${top}px`;
-        div.style.width = `${width}px`;
-        div.style.height = `${height}px`;
-        div.style.border = '2px solid var(--accent-color)';
-        div.style.boxShadow = '0 0 10px rgba(196, 184, 165, 0.5), inset 0 0 10px rgba(196, 184, 165, 0.2)';
-        div.style.borderRadius = '4px';
-        div.style.pointerEvents = 'none';
-        
-        overlay.appendChild(div);
-    });
 }

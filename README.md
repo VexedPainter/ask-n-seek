@@ -65,7 +65,6 @@ The intuitive, rule-based natural language parser translates plain English (*"re
 ## ✧ Premium Features
 
 - 🎭 **Natural Language Parsing**: Translates human queries into strict database constraints (supports colors, classes, object exclusions, and spatial relations).
-- 🎯 **Smart Bounding Box Highlighting**: Clicking a search result jumps to the exact timestamp, pauses the video, and automatically maps and draws a glowing bounding box exactly over the detected object.
 - ⚙️ **CPU-Optimized Ingestion**: Runs YOLOv8 inference through OpenVINO, capable of running smoothly on low-power Intel CPUs. Automatically filters low-confidence (sub-50%) noise for pristine precision.
 - 🩺 **Smart Vocabulary Diagnostics**: A transparent query system that actively catches non-COCO vocabulary (e.g., *"helmet"*, *"hat"*) and gracefully diagnoses constraint failures.
 - 💎 **Zero-Build Frontend**: A premium, luxury editorial-themed HTML/CSS/JS frontend completely free of complex build steps or node modules. Features a bespoke, thread-yielding particle engine.

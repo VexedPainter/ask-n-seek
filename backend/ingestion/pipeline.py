@@ -55,6 +55,13 @@ def run_pipeline(video_path):
             print(f"   Processed {idx + 1}/{len(frames)} frames...")
             
     print("4. Writing to SQLite...")
+    
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM detections WHERE video_id = ?", (video_id,))
+    conn.commit()
+    conn.close()
+    
     insert_detections(all_db_rows)
     print(f"   Done. Inserted {len(all_db_rows)} rows.")
     
