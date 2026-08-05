@@ -1,9 +1,11 @@
 :root {
-    --bg-color: #000000;
-    --text-color: #f5f3ef;
-    --accent-color: #c4b8a5;
-    --border-color: rgba(255, 255, 255, 0.05);
-    --hover-bg: rgba(255, 255, 255, 0.03);
+    --bg-color: #050211; /* Deep space dark purple/black */
+    --text-color: #f8f8ff; /* Ghost white */
+    --accent-color: #9370db; /* Cosmos purple */
+    --accent-glow: #b8860b; /* Golden glow */
+    --border-color: rgba(147, 112, 219, 0.2);
+    --hover-bg: rgba(147, 112, 219, 0.1);
+    --glass-bg: rgba(5, 2, 17, 0.6);
     
     --font-heading: 'Playfair Display', serif;
     --font-body: 'Inter', sans-serif;
@@ -17,7 +19,8 @@
 }
 
 body {
-    background-color: var(--bg-color);
+    background: radial-gradient(circle at 50% 0%, #1a0b2e 0%, var(--bg-color) 70%);
+    background-attachment: fixed;
     color: var(--text-color);
     font-family: var(--font-body);
     line-height: 1.6;
@@ -38,10 +41,54 @@ body {
 .container {
     max-width: 900px;
     margin: 0 auto;
-    padding: 6rem 2rem;
+    padding: 3rem 2rem 6rem 2rem;
     display: flex;
     flex-direction: column;
     gap: 6rem;
+    position: relative;
+    z-index: 10;
+}
+
+/* Logo Header */
+.app-header {
+    display: flex;
+    justify-content: center;
+    margin-bottom: -2rem;
+}
+
+.logo-box {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: var(--glass-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 30px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 30px rgba(147, 112, 219, 0.2);
+}
+
+.logo-icon {
+    color: var(--accent-glow);
+    font-size: 1.5rem;
+    animation: pulse 3s infinite alternate;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); text-shadow: 0 0 10px var(--accent-glow); }
+    100% { transform: scale(1.2); text-shadow: 0 0 20px var(--accent-glow), 0 0 40px var(--accent-glow); }
+}
+
+.logo-text {
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+}
+
+.logo-highlight {
+    color: var(--accent-color);
+    font-style: italic;
 }
 
 /* Typography */
@@ -87,19 +134,23 @@ body {
 
 /* Drop Zone */
 .drop-zone {
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
+    border: 1px dashed var(--accent-color);
+    border-radius: 12px;
     padding: 4rem 2rem;
     text-align: center;
     position: relative;
     cursor: pointer;
     overflow: hidden;
-    background: transparent;
-    transition: border-color 0.3s ease;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    box-shadow: 0 0 20px rgba(147, 112, 219, 0.05);
 }
 
 .drop-zone:hover {
-    border-color: rgba(255, 255, 255, 0.3);
+    border: 1px solid var(--accent-glow);
+    box-shadow: 0 0 30px rgba(184, 134, 11, 0.2);
+    transform: translateY(-2px);
 }
 
 .drop-zone-content {
@@ -162,8 +213,11 @@ body {
 
 .object-card {
     border: 1px solid var(--border-color);
+    border-radius: 8px;
     padding: 1.5rem;
-    background: var(--hover-bg);
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
 
 .object-class {
@@ -212,18 +266,21 @@ body {
 
 #search-input {
     flex: 1;
-    background: transparent;
+    background: var(--glass-bg);
+    backdrop-filter: blur(5px);
     border: 1px solid var(--border-color);
     color: var(--text-color);
     padding: 1rem 1.5rem;
     font-size: 1.1rem;
     font-family: var(--font-body);
-    border-radius: 4px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
 }
 
 #search-input:focus {
     outline: none;
-    border-color: var(--accent-color);
+    border-color: var(--accent-glow);
+    box-shadow: 0 0 15px rgba(184, 134, 11, 0.3);
 }
 
 #search-btn {
@@ -247,7 +304,11 @@ body {
     width: 100%;
     margin-bottom: 2rem;
     border: 1px solid var(--border-color);
-    background: #050505;
+    border-radius: 12px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
 }
 
 #video-player {
@@ -280,14 +341,18 @@ body {
 
 .result-card {
     border: 1px solid var(--border-color);
+    border-radius: 8px;
     padding: 1.5rem;
     cursor: pointer;
-    background: transparent;
-    transition: background 0.2s ease;
+    background: var(--glass-bg);
+    backdrop-filter: blur(5px);
+    transition: all 0.3s ease;
 }
 
 .result-card:hover {
     background: var(--hover-bg);
+    border-color: var(--accent-glow);
+    transform: translateX(10px);
 }
 
 .result-header {

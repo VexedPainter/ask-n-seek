@@ -12,7 +12,7 @@ const observer = new IntersectionObserver((entries) => {
 
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-// Particles Background (Lightweight)
+// Cosmos Energy Particles
 const canvas = document.getElementById('particle-canvas');
 const ctx = canvas.getContext('2d');
 let particles = [];
@@ -29,27 +29,31 @@ class Particle {
     constructor() {
         this.x = Math.random() * canvas.width;
         this.y = Math.random() * canvas.height;
-        this.size = Math.random() * 1.5 + 0.5;
-        this.speedY = (Math.random() * 0.2 + 0.1) * -1; // drift up
-        this.opacity = Math.random() * 0.3 + 0.1;
+        this.size = Math.random() * 2 + 1;
+        this.speedX = (Math.random() * 1 - 0.5);
+        this.speedY = (Math.random() * 1 - 0.5);
+        this.color = Math.random() > 0.5 ? '#b8860b' : '#9370db'; // Gold & Purple
     }
     update() {
+        this.x += this.speedX;
         this.y += this.speedY;
-        if (this.y < 0) {
-            this.y = canvas.height;
-            this.x = Math.random() * canvas.width;
-        }
+        if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+        if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
     }
     draw() {
-        ctx.fillStyle = `rgba(196, 184, 165, ${this.opacity})`;
+        ctx.fillStyle = this.color;
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         ctx.fill();
+        
+        // Add glow
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = this.color;
     }
 }
 
-// Keep count low (40) for CPU headroom
-for (let i = 0; i < 40; i++) {
+// Keep count around 80 for dense cosmos effect
+for (let i = 0; i < 80; i++) {
     particles.push(new Particle());
 }
 
@@ -57,10 +61,31 @@ let animationFrameId = null;
 
 function animateParticles() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw lines between close particles
+    for (let i = 0; i < particles.length; i++) {
+        for (let j = i; j < particles.length; j++) {
+            const dx = particles[i].x - particles[j].x;
+            const dy = particles[i].y - particles[j].y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            
+            if (dist < 150) {
+                ctx.beginPath();
+                ctx.strokeStyle = `rgba(147, 112, 219, ${1 - dist/150})`;
+                ctx.lineWidth = 0.5;
+                ctx.moveTo(particles[i].x, particles[i].y);
+                ctx.lineTo(particles[j].x, particles[j].y);
+                ctx.stroke();
+            }
+        }
+    }
+    
+    // Draw particles
     particles.forEach(p => {
         p.update();
         p.draw();
     });
+    
     animationFrameId = requestAnimationFrame(animateParticles);
 }
 animateParticles();
