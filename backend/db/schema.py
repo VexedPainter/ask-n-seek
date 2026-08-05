@@ -21,7 +21,8 @@ def create_tables():
                     y1 INTEGER NOT NULL,
                     x2 INTEGER NOT NULL,
                     y2 INTEGER NOT NULL,
-                    spatial_relation TEXT
+                    spatial_relation TEXT,
+                    spatial_target_color TEXT
                 )
             ''')
 
@@ -30,8 +31,8 @@ def insert_detections(detections_list):
     detections_list: list of dicts with keys matching the columns
     """
     query = '''
-        INSERT INTO detections (video_id, timestamp_s, class_name, confidence, color, x1, y1, x2, y2, spatial_relation)
-        VALUES (:video_id, :timestamp_s, :class_name, :confidence, :color, :x1, :y1, :x2, :y2, :spatial_relation)
+        INSERT INTO detections (video_id, timestamp_s, class_name, confidence, color, x1, y1, x2, y2, spatial_relation, spatial_target_color)
+        VALUES (:video_id, :timestamp_s, :class_name, :confidence, :color, :x1, :y1, :x2, :y2, :spatial_relation, :spatial_target_color)
     '''
     with contextlib.closing(get_connection()) as conn:
         with conn:

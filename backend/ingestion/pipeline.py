@@ -45,7 +45,8 @@ def run_pipeline(video_path):
                 'confidence': 0.0,
                 'color': None,
                 'x1': 0, 'y1': 0, 'x2': 0, 'y2': 0,
-                'spatial_relation': None
+                'spatial_relation': None,
+                'spatial_target_color': None
             })
         else:
             for det in detections:
@@ -59,7 +60,8 @@ def run_pipeline(video_path):
                     'y1': det['bbox'][1],
                     'x2': det['bbox'][2],
                     'y2': det['bbox'][3],
-                    'spatial_relation': det['spatial_relation']
+                    'spatial_relation': det['spatial_relation'],
+                    'spatial_target_color': det.get('spatial_target_color')
                 })
             
         if (idx + 1) % 5 == 0:

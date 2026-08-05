@@ -9,11 +9,12 @@ def get_intersection(bb1, bb2):
 
 def compute_spatial_relations(detections):
     """
-    Modifies detections in-place to add spatial_relation.
+    Modifies detections in-place to add spatial_relation and spatial_target_color.
     Evaluates intersection for 'touching', otherwise uses left/right.
     """
     for det in detections:
         det['spatial_relation'] = None
+        det['spatial_target_color'] = None
         
     if len(detections) < 2:
         return
@@ -27,6 +28,7 @@ def compute_spatial_relations(detections):
             if det_i is det_j: continue
             if get_intersection(det_i['bbox'], det_j['bbox']):
                 det_i['spatial_relation'] = f"touching:{det_j['class_name']}"
+                det_i['spatial_target_color'] = det_j.get('color')
                 break
                 
         # If no touching relation, assign left/right
@@ -39,3 +41,5 @@ def compute_spatial_relations(detections):
                     det_i['spatial_relation'] = f"left_of:{det_j['class_name']}"
                 else:
                     det_i['spatial_relation'] = f"right_of:{det_j['class_name']}"
+                det_i['spatial_target_color'] = det_j.get('color')
+
