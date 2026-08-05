@@ -25,6 +25,20 @@ def build_search_query(filter_dict, video_id):
         query_parts.append("AND spatial_relation = ?")
         params.append(filter_dict['spatial'])
         
+    if filter_dict.get('spatial_target_color'):
+        target_class = filter_dict['spatial'].split(':')[1]
+        target_color = filter_dict['spatial_target_color']
+        query_parts.append("""
+            AND EXISTS (
+                SELECT 1 FROM detections d2 
+                WHERE d2.video_id = detections.video_id 
+                AND ROUND(d2.timestamp_s) = ROUND(detections.timestamp_s) 
+                AND d2.class_name = ?
+                AND d2.color = ?
+            )
+        """)
+        params.extend([target_class, target_color])
+        
     if filter_dict.get('exclude'):
         for ex in filter_dict['exclude']:
             query_parts.append("""
@@ -78,7 +92,10 @@ def search(filter_dict, video_id):
         if filter_dict.get('color'):
             parts.append(f"color {filter_dict['color']}")
         if filter_dict.get('spatial'):
-            parts.append(filter_dict['spatial'])
+            spatial_desc = filter_dict['spatial']
+            if filter_dict.get('spatial_target_color'):
+                spatial_desc += f" (color: {filter_dict['spatial_target_color']})"
+            parts.append(spatial_desc)
         if filter_dict.get('exclude'):
             parts.append(f"no {', '.join(filter_dict['exclude'])}")
             

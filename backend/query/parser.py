@@ -144,22 +144,31 @@ def parse_query(text: str) -> dict:
     text = re.sub(r'\bwithout\s+(?:a\s+|an\s+|the\s+)?[a-z]+\b', '', text)
     
     # 3. Spatial relations
-    spatial_match = re.search(r'\b(?:to the\s+)?(left|right)\s+of\s+(?:the\s+|a\s+|an\s+)?([a-z]+)\b', text)
+    colors_str = '|'.join(COLORS)
+    
+    spatial_match = re.search(rf'\b(?:to the\s+)?(left|right)\s+of\s+(?:the\s+|a\s+|an\s+)?(?:({colors_str})\s+)?([a-z]+)\b', text)
     if spatial_match:
         direction = spatial_match.group(1)
-        target = spatial_match.group(2)
+        target_color = spatial_match.group(2)
+        target = spatial_match.group(3)
         
-        # Apply synonyms to spatial target
         target = SYNONYMS.get(target, target)
         result["spatial"] = f"{direction}_of:{target}"
-        # Remove spatial part from text
+        if target_color:
+            result["spatial_target_color"] = target_color
+            
         text = text[:spatial_match.start()] + text[spatial_match.end():]
         
-    touch_match = re.search(r'\b(touching|grabbing|pulling|holding|barging at|opening)\s+(?:the\s+|a\s+|an\s+)?([a-z]+)\b', text)
+    touch_match = re.search(rf'\b(touching|grabbing|pulling|holding|barging at|opening)\s+(?:the\s+|a\s+|an\s+)?(?:({colors_str})\s+)?([a-z]+)\b', text)
     if touch_match:
-        target = touch_match.group(2)
+        target_color = touch_match.group(2)
+        target = touch_match.group(3)
+        
         target = SYNONYMS.get(target, target)
         result["spatial"] = f"touching:{target}"
+        if target_color:
+            result["spatial_target_color"] = target_color
+            
         text = text[:touch_match.start()] + text[touch_match.end():]
 
     # 4. Count operators
