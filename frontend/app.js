@@ -191,17 +191,20 @@ function pollStatus(jobId) {
 }
 
 async function onIngestComplete() {
-    // Show Top Objects and Search sections
+    // Show Top Objects, Search, and Chat sections
     const topSec = document.getElementById('top-objects-section');
     const searchSec = document.getElementById('search-section');
+    const chatSec = document.getElementById('chat-section');
     
     topSec.classList.remove('hidden');
     searchSec.classList.remove('hidden');
+    chatSec.classList.remove('hidden');
     
     // Slight delay to allow CSS reveal to trigger if they intersect
     setTimeout(() => {
         observer.observe(topSec);
         observer.observe(searchSec);
+        observer.observe(chatSec);
     }, 100);
     
     // Fetch Top Objects
@@ -331,45 +334,207 @@ function renderResults(data) {
         `;
         
         card.addEventListener('click', () => {
-            // Smooth scroll up to the video player
-            player.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            
-            player.currentTime = start;
-            
-            // Wait 1 second for the scroll to finish before playing
-            setTimeout(() => {
-                const playPromise = player.play();
-                
-                if (playPromise !== undefined) {
-                    playPromise.catch(error => {
-                        console.warn("Playback interrupted or blocked. Trying muted...", error);
-                        // Browsers sometimes block unmuted playback even on click. 
-                        player.muted = true;
-                        player.play().catch(e => console.error("Playback fully blocked:", e));
-                    });
-                }
-            }, 1000);
-            
-            if (window.activePauseTimeout) {
-                clearTimeout(window.activePauseTimeout);
-            }
-            
-            const checkPause = () => {
-                if (player.currentTime >= end + 1) {
-                    player.pause();
-                } else if (!player.paused) {
-                    window.activePauseTimeout = setTimeout(checkPause, 100);
-                }
-            };
-            window.activePauseTimeout = setTimeout(checkPause, 100);
+            seekToTimestamp(start, end);
         });
         
         listEl.appendChild(card);
     });
 }
 
+function seekToTimestamp(start, end) {
+    const player = document.getElementById('video-player');
+    
+    // Ensure video is loaded
+    if (!player.src || !player.src.includes(currentVideoId)) {
+        player.src = `${BASE_URL}/video/${currentVideoId}`;
+    }
+    
+    // Smooth scroll up to the video player
+    player.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    
+    player.currentTime = start;
+    
+    // Wait 1 second for the scroll to finish before playing
+    setTimeout(() => {
+        const playPromise = player.play();
+        
+        if (playPromise !== undefined) {
+            playPromise.catch(error => {
+                console.warn("Playback interrupted or blocked. Trying muted...", error);
+                player.muted = true;
+                player.play().catch(e => console.error("Playback fully blocked:", e));
+            });
+        }
+    }, 1000);
+    
+    if (window.activePauseTimeout) {
+        clearTimeout(window.activePauseTimeout);
+    }
+    
+    if (end !== undefined && end !== null) {
+        const checkPause = () => {
+            if (player.currentTime >= end + 1) {
+                player.pause();
+            } else if (!player.paused) {
+                window.activePauseTimeout = setTimeout(checkPause, 100);
+            }
+        };
+        window.activePauseTimeout = setTimeout(checkPause, 100);
+    }
+}
+
 function formatTime(s) {
     const m = Math.floor(s / 60);
     const sec = Math.floor(s % 60);
     return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+}
+
+// ── Chat Panel ──────────────────────────────────────────────────────
+
+const chatInput = document.getElementById('chat-input');
+const chatSendBtn = document.getElementById('chat-send-btn');
+const chatMessages = document.getElementById('chat-messages');
+const chatTyping = document.getElementById('chat-typing');
+
+chatSendBtn.addEventListener('click', () => {
+    const text = chatInput.value.trim();
+    if (text) sendChatMessage(text);
+});
+
+chatInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        const text = chatInput.value.trim();
+        if (text) sendChatMessage(text);
+    }
+});
+
+function appendBubble(type, content) {
+    const bubble = document.createElement('div');
+    bubble.className = `chat-bubble ${type}-bubble`;
+    
+    const avatar = document.createElement('div');
+    avatar.className = 'bubble-avatar';
+    avatar.textContent = type === 'ai' ? '✧' : '◆';
+    
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'bubble-content';
+    
+    if (typeof content === 'string') {
+        const p = document.createElement('p');
+        p.textContent = content;
+        contentDiv.appendChild(p);
+    } else {
+        contentDiv.appendChild(content);
+    }
+    
+    bubble.appendChild(avatar);
+    bubble.appendChild(contentDiv);
+    chatMessages.appendChild(bubble);
+    
+    // Scroll to bottom
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+    return contentDiv;
+}
+
+function showTyping() {
+    chatTyping.classList.remove('hidden');
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function hideTyping() {
+    chatTyping.classList.add('hidden');
+}
+
+async function sendChatMessage(text) {
+    if (!currentVideoId) {
+        appendBubble('ai', 'Please upload a video first before asking questions.');
+        return;
+    }
+    
+    // Append user bubble
+    appendBubble('user', text);
+    chatInput.value = '';
+    
+    // Show typing indicator
+    showTyping();
+    
+    try {
+        const res = await fetch(`${BASE_URL}/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: text, video_id: currentVideoId })
+        });
+        const data = await res.json();
+        
+        hideTyping();
+        
+        // Build AI response content
+        const fragment = document.createDocumentFragment();
+        
+        // Reply text
+        const replyP = document.createElement('p');
+        replyP.textContent = data.reply || 'No response received.';
+        fragment.appendChild(replyP);
+        
+        // Language tag if non-English
+        if (data.language_detected && data.language_detected !== 'en') {
+            const langNames = { hi: 'Hindi', kn: 'Kannada', ta: 'Tamil', te: 'Telugu', ml: 'Malayalam' };
+            const langTag = document.createElement('div');
+            langTag.className = 'bubble-lang-tag';
+            langTag.textContent = `Detected: ${langNames[data.language_detected] || data.language_detected}`;
+            fragment.appendChild(langTag);
+        }
+        
+        // Inline result chips if results exist
+        if (data.results && data.results.length > 0) {
+            const strip = document.createElement('div');
+            strip.className = 'chat-result-strip';
+            
+            // Show up to 8 chips, then a "+N more" label
+            const maxChips = 8;
+            const showResults = data.results.slice(0, maxChips);
+            
+            showResults.forEach(r => {
+                const start = r.start !== undefined ? r.start : r.window;
+                const end = r.end !== undefined ? r.end : start;
+                
+                const chip = document.createElement('span');
+                chip.className = 'chat-result-chip';
+                chip.innerHTML = `<span class="chip-icon">▶</span> ${formatTime(start)}`;
+                chip.title = r.explanation || `Jump to ${formatTime(start)}`;
+                
+                chip.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    // Ensure results section is visible with video
+                    const resultsSec = document.getElementById('results-section');
+                    resultsSec.classList.remove('hidden');
+                    const player = document.getElementById('video-player');
+                    if (!player.src || !player.src.includes(currentVideoId)) {
+                        player.src = `${BASE_URL}/video/${currentVideoId}`;
+                    }
+                    seekToTimestamp(start, end);
+                });
+                
+                strip.appendChild(chip);
+            });
+            
+            if (data.results.length > maxChips) {
+                const more = document.createElement('span');
+                more.className = 'chat-result-chip';
+                more.textContent = `+${data.results.length - maxChips} more`;
+                more.style.cursor = 'default';
+                more.style.opacity = '0.6';
+                strip.appendChild(more);
+            }
+            
+            fragment.appendChild(strip);
+        }
+        
+        appendBubble('ai', fragment);
+        
+    } catch (err) {
+        hideTyping();
+        appendBubble('ai', `Something went wrong: ${err.message}`);
+    }
 }

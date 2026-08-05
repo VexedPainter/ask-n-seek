@@ -78,6 +78,33 @@
                 <!-- Result cards populated by JS -->
             </div>
         </section>
+
+        <!-- Chat Panel -->
+        <section id="chat-section" class="reveal hidden">
+            <h2 class="section-title">Chat with Your Footage</h2>
+            <div class="chat-container">
+                <div id="chat-messages" class="chat-messages">
+                    <div class="chat-bubble ai-bubble">
+                        <div class="bubble-avatar">✧</div>
+                        <div class="bubble-content">
+                            <p>Hey! I'm your video assistant. Ask me anything about the footage — in English, Hindi, or Kannada.</p>
+                        </div>
+                    </div>
+                </div>
+                <div id="chat-typing" class="chat-typing hidden">
+                    <div class="bubble-avatar">✧</div>
+                    <div class="typing-dots">
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>
+                <div class="chat-input-bar">
+                    <input type="text" id="chat-input" placeholder="Ask in English, Hindi, or Kannada... ✦" autocomplete="off">
+                    <button id="chat-send-btn">
+                        <span class="send-icon">➤</span>
+                    </button>
+                </div>
+            </div>
+        </section>
     </main>
 
     <script src="app.js"></script>
