@@ -3,117 +3,337 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ask-N-Seek</title>
-    <!-- Google Fonts -->
+    <title>Garuda Gamana | Video Intelligence</title>
+    <meta name="description" content="AI-powered video surveillance search. Find objects, people and events in CCTV footage using natural language.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
+    <!-- Bridge status bar (required by app.js) -->
+    <div id="bridgeStatusBar" class="bridge-status-bar">
+        <span id="globalBridgeDot" class="bridge-dot"></span>
+        <span id="globalBridgeText" class="bridge-text">Connecting to backend...</span>
+    </div>
+
+    <!-- Particle canvas (app.js draws galaxy particles here) -->
     <canvas id="particle-canvas"></canvas>
 
-    <main class="container">
-        <!-- Logo Header -->
-        <header class="app-header reveal">
-            <div class="logo-box">
-                <span class="logo-icon">✧</span>
-                <span class="logo-text">Ask<span class="logo-highlight">N</span>Seek</span>
-            </div>
-        </header>
+    <!-- ════════════════════════════════════════════════════════
+         TOP HEADER
+         ════════════════════════════════════════════════════════ -->
+    <header class="app-header">
+        <div class="logo-box">
+            <span class="logo-sun">&#9728;</span>
+            <span class="logo-text">Garuda Gamana</span>
+        </div>
 
-        <!-- Navigation Bar -->
-        <nav class="main-nav reveal" style="transition-delay: 0.05s;">
+        <!-- 3-tab pill navigation — data-target must match app.js views keys exactly -->
+        <nav class="main-nav">
             <button class="nav-btn active" data-target="dashboard">Dashboard</button>
             <button class="nav-btn" data-target="upload">Upload</button>
             <button class="nav-btn" data-target="results">Results</button>
         </nav>
 
-        <!-- Hero Section -->
-        <section id="hero" class="reveal" style="transition-delay: 0.1s;">
-            <h1 class="headline">Type what happened. <br>We'll show you exactly where — and prove it.</h1>
-            <p class="subheadline">Upload your footage and search using natural language.</p>
-        </section>
+        <div class="header-right">
+            <span class="light-label">LIGHT</span>
+            <div class="theme-track"><div class="theme-thumb"></div></div>
+        </div>
+    </header>
 
-        <!-- Upload Zone -->
-        <section id="upload-section" class="reveal">
-            <div id="drop-zone" class="drop-zone">
-                <div class="drop-zone-content">
-                    <span class="upload-icon">⇪</span>
-                    <p>Drag and drop a video file, or <span class="browse-btn">browse</span></p>
-                    <input type="file" id="file-input" accept="video/mp4,video/x-m4v,video/*">
+    <!-- ════════════════════════════════════════════════════════
+         DASHBOARD VIEW  (app.js: 'dashboard' -> ['chat-section'])
+         Two-panel: chat left, video sidebar right
+         ════════════════════════════════════════════════════════ -->
+    <section id="chat-section" class="view-panel dashboard-layout">
+
+        <!-- LEFT: Chat panel -->
+        <div class="chat-panel">
+
+            <!-- Greeting shown before any messages typed -->
+            <div class="chat-greeting" id="chatGreeting">
+                <span class="greeting-sun">&#9728;</span>
+                <h1 class="greeting-title">Namaskara</h1>
+                <p class="greeting-sub">&#3240;&#3264;&#3256;&#3277;&#3256; &#3253;&#3263;&#3233;&#3265;&#3265;&#3253;&#3277; &#3240;&#3253;&#3277;&#3269;&#3254;&#3265;&#3256;&#3261;&#3277;&#3256;&#3277; &#3256;&#3267;&#3240;&#3262;&#3265;&#3243;</p>
+                <div class="quick-chips" id="quickChipsGreet">
+                    <button class="quick-chip" onclick="injectChat('Find red car footage')">Find red car footage</button>
+                    <button class="quick-chip" onclick="injectChat('Who enters after 5pm?')">Who enters after 5pm?</button>
+                    <button class="quick-chip" onclick="injectChat('Motion alerts today')">Motion alerts today</button>
+                    <button class="quick-chip" onclick="injectChat('Export last 24h')">Export last 24h</button>
                 </div>
             </div>
-            
-            <div id="ingest-status" class="hidden">
-                <div class="progress-container">
-                    <div id="progress-bar" class="progress-bar"></div>
-                </div>
-                <p id="progress-text" class="progress-text">Initializing...</p>
-            </div>
-        </section>
 
-        <!-- Top Objects Summary -->
-        <section id="top-objects-section" class="reveal hidden">
-            <h2 class="section-title">Discovered Objects</h2>
-            <div id="objects-grid" class="objects-grid">
-                <!-- Populated by JS -->
+            <!-- Active filters bar (progressive filtering) -->
+            <div id="active-filters-bar" style="display:none;">
+                <span class="af-label">Active Filters:</span>
+                <div id="active-filter-chips"></div>
+                <button id="clear-filters-btn" class="af-clear-btn">&#10005; Clear All</button>
             </div>
-        </section>
 
-        <!-- Search -->
-        <section id="search-section" class="reveal hidden">
-            <h2 class="section-title">Query the Footage</h2>
-            <div class="preset-queries">
-                <button class="preset-btn" data-query="show me all vehicles">Any vehicles?</button>
-                <button class="preset-btn" data-query="person without a helmet">Safety violations?</button>
-                <button class="preset-btn" data-query="red car left of the truck">Specific relations?</button>
-            </div>
-            <div class="search-box">
-                <input type="text" id="search-input" placeholder="e.g., 'red frisbee' or 'person wearing no hat'">
-                <button id="search-btn">Search</button>
-            </div>
-        </section>
+            <!-- Chat messages (app.js appends bubbles here) -->
+            <div id="chat-messages" class="chat-messages"></div>
 
-        <!-- Results -->
-        <section id="results-section" class="reveal hidden">
+            <!-- Typing indicator -->
+            <div id="chat-typing" class="chat-typing hidden">
+                <div class="bubble-avatar">&#9728;</div>
+                <div class="typing-dots"><span></span><span></span><span></span></div>
+            </div>
+
+            <!-- Inline upload progress bar -->
+            <div id="chat-upload-progress" class="chat-upload-progress hidden">
+                <div class="cup-bar-wrap"><div id="cup-bar" class="cup-bar"></div></div>
+                <span id="cup-label" class="cup-label">Uploading...</span>
+            </div>
+
+            <!-- Chat input -->
+            <div class="chat-input-bar">
+                <label id="chat-attach-label" class="chat-attach-btn" title="Upload video">
+                    <input type="file" id="chat-file-input" accept="video/mp4,video/x-m4v,video/*" style="display:none;">
+                    <span>&#8679;</span>
+                </label>
+                <input type="text" id="chat-input" placeholder="Ask in English, Hindi, or Kannada..." autocomplete="off">
+                <button id="chat-send-btn"><span class="send-icon">&#8599;</span></button>
+            </div>
+        </div>
+
+        <!-- RIGHT: My Videos sidebar -->
+        <aside class="videos-sidebar">
+            <div class="sidebar-header">
+                <span class="sidebar-title">My Videos</span>
+                <span id="videoCountBadge" class="video-count-badge">0 files</span>
+            </div>
+            <div id="videoListPanel" class="video-list">
+                <div class="video-list-empty">No videos yet.<br>Upload one to get started.</div>
+            </div>
+            <div class="sidebar-footer">
+                <span id="sidebarStatus" class="sidebar-status-text">0 processed &middot; 0 pending</span>
+                <button class="upload-btn-sidebar" onclick="document.querySelector('[data-target=upload]').click()">+ Upload</button>
+            </div>
+        </aside>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════
+         UPLOAD VIEW  (app.js: 'upload' -> ['hero', 'upload-section'])
+         ════════════════════════════════════════════════════════ -->
+
+    <!-- 'hero' section: app.js shows/hides this — keep as minimal spacer -->
+    <section id="hero" class="view-panel hero-section hidden">
+        <!-- intentionally empty; app.js toggles its visibility -->
+    </section>
+
+    <section id="upload-section" class="view-panel upload-view hidden">
+        <div id="uploadZone" class="drop-zone">
+            <div class="drop-zone-content">
+                <div class="upload-icon-lg">&#8679;</div>
+                <h2 class="upload-title">Upload Video Footage</h2>
+                <p class="upload-sub">Drag &amp; drop MP4, MOV, or AVI files here</p>
+                <label class="browse-files-btn">
+                    Browse Files
+                    <input type="file" id="fileInput" accept="video/mp4,video/x-m4v,video/*" style="display:none;">
+                </label>
+                <!-- .browse-btn needed by app.js event binding — keep hidden -->
+                <span class="browse-btn" style="display:none;"></span>
+                <p class="upload-hint">MP4, AVI, MOV, MKV &middot; Max 3 minutes</p>
+            </div>
+        </div>
+
+        <!-- Ingestion progress (shown by app.js on upload) -->
+        <div id="ingest-status" class="ingest-status-wrap hidden">
+            <div id="ingestMetaBar" class="ingest-meta-bar" style="display:none;">
+                <span id="ingestPct" class="ingest-pct">0%</span>
+                <span id="ingestPhaseLabel" class="ingest-phase-label">Queued</span>
+                <span id="ingestElapsed" class="ingest-elapsed">Elapsed: 0:00</span>
+            </div>
+            <div class="progress-container">
+                <div id="progressFill" class="progress-bar" style="width:0%"></div>
+            </div>
+            <div class="progress-phases" id="progressPhases">
+                <div class="phase" data-phase="0"><span class="phase-dot"></span><span class="phase-name">Scene Detection</span></div>
+                <div class="phase" data-phase="1"><span class="phase-dot"></span><span class="phase-name">Keyframes</span></div>
+                <div class="phase" data-phase="2"><span class="phase-dot"></span><span class="phase-name">YOLO Detection</span></div>
+                <div class="phase" data-phase="3"><span class="phase-dot"></span><span class="phase-name">Color Extraction</span></div>
+                <div class="phase" data-phase="4"><span class="phase-dot"></span><span class="phase-name">Spatial Relations</span></div>
+                <div class="phase" data-phase="5"><span class="phase-dot"></span><span class="phase-name">Indexing</span></div>
+            </div>
+            <div class="progress-log" id="progressLog"></div>
+            <div id="ingestStats" class="ingest-stats" style="display:none;"></div>
+        </div>
+
+        <!-- Collection badge after ingestion complete -->
+        <div id="collectionBadge" class="collection-badge" style="display:none;">
+            <div class="collection-ready-dot"></div>
+            <div>
+                <div class="collection-label">Active Collection</div>
+                <div id="collectionName" class="collection-name"></div>
+            </div>
+            <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+                <span id="bridgeStatusDot" class="bridge-dot" style="width:6px;height:6px;"></span>
+                <span id="bridgeStatusText" style="font-size:0.65rem;color:#888;">Ready</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════
+         RESULTS VIEW  (app.js: 'results' -> ['top-objects-section','search-section','results-section'])
+         All three must be top-level siblings so switchView() can find them
+         ════════════════════════════════════════════════════════ -->
+
+    <!-- Discovered objects strip (shown after ingestion) -->
+    <section id="top-objects-section" class="view-panel top-objects-panel hidden">
+        <div class="top-objects-title">Discovered Objects</div>
+        <div id="topObjectsGrid" class="top-objects-grid"></div>
+    </section>
+
+    <!-- Search controls -->
+    <section id="search-section" class="view-panel search-panel hidden">
+        <!-- Scenario presets from /scenarios API -->
+        <div id="scenarioPresets" class="scenario-presets" style="display:none;">
+            <div class="presets-label">Investigation Scenarios</div>
+            <div id="presetsGrid" class="presets-grid"></div>
+        </div>
+
+        <!-- Quick chips (top detected classes) -->
+        <div id="quickChips" class="quick-chips-results" style="display:none;"></div>
+
+        <!-- Static fallback presets -->
+        <div class="preset-queries" id="staticPresets">
+            <button class="preset-btn" data-query="show me all vehicles">Any vehicles?</button>
+            <button class="preset-btn" data-query="person without a helmet">Safety violations?</button>
+            <button class="preset-btn" data-query="red car left of the truck">Specific relations?</button>
+        </div>
+
+        <!-- Search box -->
+        <div class="search-box">
+            <input type="text" id="queryInput" placeholder="e.g., 'red car' or 'person without helmet'">
+            <button id="searchBtn">Search</button>
+        </div>
+
+        <!-- Vocab warnings -->
+        <div class="vocab-warnings" id="vocabWarnings"></div>
+
+        <!-- Dynamic suggestion chips -->
+        <div class="suggestions" id="suggestions-container" style="display:none;">
+            <div id="dynamic-suggestions" class="suggestions-row"></div>
+        </div>
+    </section>
+
+    <!-- Results output panel -->
+    <section id="results-section" class="view-panel results-view hidden">
+
+        <!-- Results header (count + query description) -->
+        <div class="results-header-bar" id="resultsHeader" style="display:none;">
+            <h2 class="results-heading">Analysis Results</h2>
+            <span class="results-meta" id="resultsQuery"></span>
+        </div>
+        <!-- resultsCount used by app.js -->
+        <h3 id="resultsCount" class="results-count-el" style="display:none;"></h3>
+
+        <!-- Result cards -->
+        <div id="resultsGrid" class="results-list"></div>
+
+        <!-- Diagnosis (no-match explanation) -->
+        <div class="diagnosis-panel" id="diagnosisPanel" style="display:none;"></div>
+
+        <!-- Video player -->
+        <div class="video-player-area" id="videoPlayerArea" style="display:none;">
+            <div class="player-header">
+                <span class="player-label">Video Player</span>
+                <span class="player-time" id="playerTime">00:00.00</span>
+            </div>
             <div class="video-container">
-                <video id="video-player" controls preload="metadata"></video>
+                <video id="mainVideo" controls preload="metadata"></video>
             </div>
-            <div id="results-message" class="results-message"></div>
-            <div id="jump-list" class="jump-list">
-                <!-- Result cards populated by JS -->
+            <div id="clipControls" class="clip-controls" style="display:none;">
+                <span class="clip-badge">6s Clip</span>
+                <span id="clipInfo" class="clip-info"></span>
+                <button id="playClipBtn" class="play-clip-btn">&#9654; Play Clip</button>
             </div>
-        </section>
+            <div class="result-picker">
+                <select id="resultPicker"><option value="">Jump to result...</option></select>
+            </div>
+        </div>
 
-        <!-- Chat Panel -->
-        <section id="chat-section" class="reveal hidden">
-            <h2 class="section-title">Chat with Your Footage</h2>
-            <div class="chat-container">
-                <div id="chat-messages" class="chat-messages">
-                    <div class="chat-bubble ai-bubble">
-                        <div class="bubble-avatar">✧</div>
-                        <div class="bubble-content">
-                            <p>Hey! I'm your video assistant. Ask me anything about the footage — in English, Hindi, or Kannada.</p>
-                        </div>
-                    </div>
-                </div>
-                <div id="chat-typing" class="chat-typing hidden">
-                    <div class="bubble-avatar">✧</div>
-                    <div class="typing-dots">
-                        <span></span><span></span><span></span>
-                    </div>
-                </div>
-                <div class="chat-input-bar">
-                    <input type="text" id="chat-input" placeholder="Ask in English, Hindi, or Kannada... ✦" autocomplete="off">
-                    <button id="chat-send-btn">
-                        <span class="send-icon">➤</span>
-                    </button>
-                </div>
-            </div>
-        </section>
-    </main>
+        <!-- Jump list -->
+        <div id="jumpListSection" style="display:none;">
+            <div class="jump-list-header">All Matches</div>
+            <div id="resultJumpList" class="result-jump-list"></div>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════
+         HISTORY SIDEBAR
+         ════════════════════════════════════════════════════════ -->
+    <div class="history-sidebar" id="historySidebar">
+        <div class="history-header">
+            <span>Session History</span>
+            <button id="closeHistory">&#10005;</button>
+        </div>
+        <div class="history-list" id="historyList"></div>
+    </div>
+    <button class="history-toggle" id="historyToggle" title="Query History">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="1 4 1 10 7 10"/>
+            <polyline points="23 20 23 14 17 14"/>
+            <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+        </svg>
+    </button>
+
+    <button class="help-btn" title="Help">?</button>
 
     <script src="app.js"></script>
+    <script>
+    // Helper: inject text into chat input and submit (used by greeting quick-chips)
+    function injectChat(text) {
+        const input = document.getElementById('chat-input');
+        const btn   = document.getElementById('chat-send-btn');
+        if (!input || !btn) return;
+        input.value = text;
+        btn.click();
+        const g = document.getElementById('chatGreeting');
+        if (g) g.style.display = 'none';
+    }
+
+    // Populate My Videos sidebar by calling /videos/list on the backend
+    async function loadVideoSidebar() {
+        try {
+            const r = await fetch('http://localhost:8000/videos/list');
+            if (!r.ok) return;
+            const data   = await r.json();
+            const videos = data.videos || (Array.isArray(data) ? data : []);
+            const panel  = document.getElementById('videoListPanel');
+            const badge  = document.getElementById('videoCountBadge');
+            const status = document.getElementById('sidebarStatus');
+            if (!panel || !videos.length) return;
+
+            badge.textContent = videos.length + ' file' + (videos.length !== 1 ? 's' : '');
+            const done    = videos.filter(function(v){ return v.already_ingested; }).length;
+            const pending = videos.length - done;
+            if (status) status.textContent = done + ' processed \u00b7 ' + pending + ' pending';
+
+            panel.innerHTML = videos.map(function(v) {
+                var name  = (v.name || v.video_id || 'Unknown').replace(/\.mp4$/i, '');
+                var size  = v.size_mb ? v.size_mb.toFixed(1) + ' MB' : '';
+                var badgeHtml = v.already_ingested
+                    ? '<span class="vid-badge vid-badge-done">&#9679; Processed</span>'
+                    : '<span class="vid-badge vid-badge-pend">&#9679; Processing</span>';
+                return '<div class="video-item">'
+                    + '<div class="vid-play-btn">&#9654;</div>'
+                    + '<div class="vid-info">'
+                    + '<div class="vid-name">' + name + '</div>'
+                    + '<div class="vid-meta">' + size + ' ' + badgeHtml + '</div>'
+                    + '</div>'
+                    + '<div class="vid-more">&#8942;</div>'
+                    + '</div>';
+            }).join('');
+        } catch(e) { /* backend offline */ }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadVideoSidebar();
+        setInterval(loadVideoSidebar, 10000);
+    });
+    </script>
 </body>
 </html>
